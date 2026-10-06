@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汽车售后知识库</title>
+    <!-- 引入 Font Awesome 图标库 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- 引入 marked.js 用于解析 Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4a6fa5; /* 主要颜色 */
+            --primary-light: #6b8bb8; /* 主要亮色 */
+            --primary-dark: #3a5a8c; /* 主要暗色 */
+            --secondary-color: #6c757d; /* 次要颜色 */
+            --accent-color: #61dafb; /* 强调颜色 */
+            --bg-color: #f8f9fa; /* 背景颜色 */
+            --text-color: #343a40; /* 文本颜色 */
+            --border-color: #dee2e6; /* 边框颜色 */
+            --hover-color: #e9ecef; /* 悬停颜色 */
+            --success-color: #28a745; /* 成功颜色 */
+            --info-color: #17a2b8; /* 信息颜色 */
+            --warning-color: #ffc107; /* 警告颜色 */
+            --danger-color: #dc3545; /* 危险颜色 */
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 卡片阴影 */
+            --transition: all 0.3s ease; /* 过渡效果 */
+        }
+
+        * {
+            box-sizing: border-box; /* 盒模型 */
+            margin: 0; /* 外边距 */
+            padding: 0; /* 内边距 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 字体族 */
+            line-height: 1.6; /* 行高 */
+            color: var(--text-color); /* 文本颜色 */
+            background-color: var(--bg-color); /* 背景颜色 */
+            display: flex; /* 弹性布局 */
+            flex-direction: column; /* 垂直排列 */
+            height: 100vh; /* 高度100%视口 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        /* 深色模式支持 */
+        body.dark-mode {
+            --primary-color: #5b7cac; /* 主要颜色 */
+            --primary-light: #7c9dcf; /* 主要亮色 */
+            --primary-dark: #4a6fa5; /* 主要暗色 */
+            --secondary-color: #adb5bd; /* 次要颜色 */
+            --bg-color: #212529; /* 背景颜色 */
+            --text-color: #f8f9fa; /* 文本颜色 */
+            --border-color: #343a40; /* 边框颜色 */
+            --hover-color: #343a40; /* 悬停颜色 */
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); /* 渐变背景 */
+            color: white; /* 文本颜色 */
+            padding: 1rem; /* 内边距 */
+            text-align: center; /* 文本居中 */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 阴影 */
+            position: relative; /* 相对定位 */
+        }
+
+        /* 深色模式切换按钮 */
+        .theme-toggle {
+            position: absolute; /* 绝对定位 */
+            right: 1rem; /* 右1rem */
+            top: 50%; /* 顶部50% */
+            transform: translateY(-50%); /* Y轴居中 */
+            background: none; /* 背景无 */
+            border: none; /* 边框无 */
+            color: white; /* 颜色白色 */
+            font-size: 1.2rem; /* 字体大小 */
+            cursor: pointer; /* 鼠标指针 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-50%) scale(1.1); /* 悬停放大 */
+        }
+
+        .container {
+            max-width: 1200px; /* 最大宽度 */
+            margin: 0 auto; /* 居中 */
+            padding: 1rem; /* 内边距 */
+            display: flex; /* 弹性布局 */
+            flex: 1; /* 占满剩余空间 */
+            flex-direction: column; /* 垂直排列 */
+        }
+
+        .chat-container {
+            display: flex; /* 弹性布局 */
+            height: calc(100vh - 180px); /* 高度计算 */
+            border: 1px solid var(--border-color); /* 边框 */
+            border-radius: 8px; /* 圆角 */
+            overflow: hidden; /* 溢出隐藏 */
+            background-color: var(--bg-color); /* 背景颜色 */
+            box-shadow: var(--card-shadow); /* 卡片阴影 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .sidebar {
+            width: 280px; /* 宽度 */
+            background-color: var(--bg-color); /* 背景颜色 */
+            padding: 1rem; /* 内边距 */
+            border-right: 1px solid var(--border-color); /* 右边框 */
+            display: flex; /* 弹性布局 */
+            flex-direction: column; /* 垂直排列 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        /* 搜索框样式 */
+        .search-box {
+            padding: 0.5rem; /* 内边距 */
+            border-radius: 4px; /* 圆角 */
+            border: 1px solid var(--border-color); /* 边框 */
+            background-color: var(--bg-color); /* 背景颜色 */
+            color: var(--text-color); /* 文本颜色 */
+            margin-bottom: 1rem; /* 下边距 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .search-box:focus {
+            outline: none; /* 无轮廓 */
+            border-color: var(--primary-color); /* 边框颜色 */
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2); /* 焦点阴影 */
+        }
+
+        .main-content {
+            flex: 1; /* 占满剩余空间 */
+            display: flex; /* 弹性布局 */
+            flex-direction: column; /* 垂直排列 */
+            position: relative; /* 相对定位 */
+        }
+
+        .chat-history {
+            flex: 1; /* 占满剩余空间 */
+            padding: 1rem; /* 内边距 */
+            overflow-y: auto; /* 垂直滚动 */
+            scroll-behavior: smooth; /* 平滑滚动 */
+            background-color: var(--bg-color); /* 背景颜色 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .chat-input-container {
+            padding: 1rem; /* 内边距 */
+            border-top: 1px solid var(--border-color); /* 上边框 */
+            background-color: var(--bg-color); /* 背景颜色 */
+            display: flex; /* 弹性布局 */
+            flex-direction: column; /* 垂直排列 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .input-tools {
+            display: flex; /* 弹性布局 */
+            margin-bottom: 0.5rem; /* 下边距 */
+            gap: 0.5rem; /* 间距 */
+        }
+
+        .tool-btn {
+            background-color: transparent; /* 透明背景 */
+            border: none; /* 无边框 */
+            color: var(--secondary-color); /* 文本颜色 */
+            cursor: pointer; /* 鼠标指针 */
+            padding: 0.3rem; /* 内边距 */
+            border-radius: 4px; /* 圆角 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .tool-btn:hover {
+            background-color: var(--hover-color); /* 悬停背景 */
+            color: var(--primary-color); /* 悬停颜色 */
+        }
+
+        /* 带图问答: 待发送图片的缩略图预览条 */
+        .image-preview {
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            gap: 0.5rem; /* 图片与移除按钮间距 */
+            padding: 0.5rem 0.75rem; /* 内边距 */
+            margin-bottom: 0.5rem; /* 与输入框拉开 */
+            border: 1px solid var(--border-color); /* 边框 */
+            border-radius: 4px; /* 圆角 */
+            background-color: var(--hover-color); /* 浅底, 区别于输入框 */
+        }
+
+        .image-preview img {
+            max-height: 72px; /* 限高, 不挤占输入区 */
+            max-width: 140px; /* 限宽 */
+            border-radius: 4px; /* 圆角 */
+            object-fit: contain; /* 保持比例不裁切 */
+        }
+
+        .image-preview-remove {
+            background-color: transparent; /* 透明背景 */
+            border: none; /* 无边框 */
+            color: var(--secondary-color); /* 文本颜色 */
+            cursor: pointer; /* 鼠标指针 */
+            font-size: 1.25rem; /* 稍大, 好点 */
+            line-height: 1; /* 紧贴 */
+            padding: 0 0.25rem; /* 内边距 */
+            border-radius: 4px; /* 圆角 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .image-preview-remove:hover {
+            background-color: var(--border-color); /* 悬停背景 */
+            color: var(--primary-color); /* 悬停颜色 */
+        }
+
+        /* 用户消息里回显的提问图片 */
+        .message-image {
+            display: block; /* 独占一行 */
+            max-width: 240px; /* 限宽, 不撑破气泡 */
+            max-height: 240px; /* 限高 */
+            margin-bottom: 0.5rem; /* 与下方文字拉开 */
+            border-radius: 4px; /* 圆角 */
+            object-fit: contain; /* 保持比例不裁切 */
+        }
+
+        /* ---- 回答下方的"依据第 X 页" + 页图缩略图 ---- */
+        .page-strip {
+            margin-top: 0.75rem; /* 与正文拉开 */
+            padding-top: 0.625rem; /* 与分割线拉开 */
+            /* 分隔线不用 var(--border-color): 深色模式下它(#343a40)与助手气泡底色
+               (var(--hover-color) = #343a40)**是同一个值**, 线会彻底看不见。
+               中性灰 + 透明度在两个模式下都有对比度。 */
+            border-top: 1px solid rgba(128, 128, 128, 0.35);
+        }
+
+        .page-strip-label {
+            font-size: 0.78rem; /* 小一号 */
+            color: var(--secondary-color); /* 次要色 */
+            margin-bottom: 0.5rem; /* 与缩略图拉开 */
+        }
+
+        .page-thumbs {
+            display: flex; /* 横向排列 */
+            flex-wrap: wrap; /* 放不下就换行 */
+            gap: 0.5rem; /* 间距 */
+        }
+
+        /* 选择器必须带 .message-content 前缀: 上面那条 `.message-content img`
+           (max-width:100%) 是"一 class + 一 type", 单靠 .page-thumb 这一 class 压不住它,
+           缩略图会被撑到整条气泡宽。两条 class 才赢得过。 */
+        .message-content .page-thumb {
+            display: block; /* 去掉行内元素的下方空隙 */
+            margin: 0; /* 盖掉 `.message-content img` 的上下 margin */
+            width: 96px; /* 缩略图宽 */
+            height: 68px; /* 缩略图高(与页图 1500x1061 同比例) */
+            object-fit: cover; /* 等比填满, 不拉伸 */
+            background-color: var(--bg-color); /* 加载中的占位底色 */
+            border: 1px solid var(--border-color); /* 边框 */
+            border-radius: 4px; /* 圆角 */
+            cursor: zoom-in; /* 提示可点开 */
+            transition: var(--transition); /* 悬停过渡 */
+        }
+
+        .message-content .page-thumb:hover {
+            border-color: var(--primary-color); /* 悬停高亮边框 */
+            transform: translateY(-2px); /* 轻微上浮 */
+            box-shadow: var(--card-shadow); /* 悬停阴影 */
+        }
+
+        /* ---- 大图查看(lightbox) ---- */
+        .lightbox {
+            position: fixed; /* 覆盖整个视口 */
+            inset: 0; /* 四边贴齐 */
+            z-index: 9999; /* 压在所有内容之上 */
+            display: flex; /* 弹性布局 */
+            flex-direction: column; /* 图与提示文字上下排 */
+            align-items: center; /* 水平居中 */
+            justify-content: center; /* 垂直居中 */
+            gap: 0.75rem; /* 图与提示的间距 */
+            padding: 2vh 2vw; /* 留边, 大图不至于贴边 */
+            background-color: rgba(0, 0, 0, 0.85); /* 半透明遮罩 */
+            cursor: zoom-out; /* 提示点空白可关 */
+        }
+
+        .lightbox.hidden {
+            display: none; /* 隐藏态 */
+        }
+
+        .lightbox img {
+            max-width: 94vw; /* 不超出视口宽 */
+            max-height: 88vh; /* 不超出视口高 */
+            border-radius: 4px; /* 圆角 */
+            background-color: #fff; /* 页图底色, 透明 PNG 也看得清 */
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); /* 浮起感 */
+            cursor: default; /* 图上不显示"可关"手势 */
+        }
+
+        .lightbox-hint {
+            font-size: 0.8rem; /* 小字 */
+            color: rgba(255, 255, 255, 0.75); /* 深色遮罩上的浅字 */
+        }
+
+        .input-group {
+            display: flex; /* 弹性布局 */
+            position: relative; /* 相对定位 */
+        }
+
+        .chat-input {
+            flex: 1; /* 占满剩余空间 */
+            padding: 0.75rem; /* 内边距 */
+            border: 1px solid var(--border-color); /* 边框 */
+            border-radius: 4px 0 0 4px; /* 圆角 */
+            font-size: 1rem; /* 字体大小 */
+            resize: none; /* 不可调整大小 */
+            height: 45px; /* 高度 */
+            max-height: 150px; /* 最大高度 */
+            overflow-y: auto; /* 垂直滚动 */
+            background-color: var(--bg-color); /* 背景颜色 */
+            color: var(--text-color); /* 文本颜色 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .chat-input:focus {
+            outline: none; /* 无轮廓 */
+            border-color: var(--primary-color); /* 边框颜色 */
+            box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2); /* 焦点阴影 */
+        }
+
+        .send-btn {
+            background-color: var(--primary-color); /* 背景颜色 */
+            color: white; /* 文本颜色 */
+            border: none; /* 无边框 */
+            padding: 0 1.25rem; /* 内边距 */
+            border-radius: 0 4px 4px 0; /* 圆角 */
+            cursor: pointer; /* 鼠标指针 */
+            font-size: 1rem; /* 字体大小 */
+            transition: var(--transition); /* 过渡效果 */
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            gap: 0.5rem; /* 间距 */
+        }
+
+        .send-btn:hover {
+            background-color: var(--primary-dark); /* 悬停背景 */
+            transform: translateY(-2px); /* 上移 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 悬停阴影 */
+        }
+
+        .send-btn:active {
+            transform: translateY(0); /* 恢复 */
+            box-shadow: none; /* 无阴影 */
+        }
+
+        .send-btn:disabled {
+            background-color: var(--secondary-color); /* 禁用背景 */
+            cursor: not-allowed; /* 禁用指针 */
+        }
+
+        .message {
+            margin-bottom: 1rem; /* 下边距 */
+            display: flex; /* 弹性布局 */
+            flex-direction: column; /* 垂直排列 */
+            animation: fadeIn 0.3s ease; /* 淡入动画 */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            margin-bottom: 0.25rem; /* 下边距 */
+            font-size: 0.85rem; /* 字体大小 */
+            color: var(--secondary-color); /* 文本颜色 */
+        }
+
+        .avatar {
+            width: 32px; /* 宽度 */
+            height: 32px; /* 高度 */
+            border-radius: 50%; /* 圆形 */
+            margin-right: 0.5rem; /* 右边距 */
+            background-color: var(--primary-color); /* 背景颜色 */
+            color: white; /* 文本颜色 */
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            font-weight: bold; /* 粗体 */
+        }
+
+        .message-content {
+            padding: 0.75rem 1rem; /* 内边距 */
+            border-radius: 8px; /* 圆角 */
+            max-width: 80%; /* 最大宽度 */
+            word-break: break-word; /* 单词换行 */
+            box-shadow: var(--card-shadow); /* 卡片阴影 */
+            position: relative; /* 相对定位 */
+        }
+
+        .user-message {
+            align-self: flex-end; /* 右对齐 */
+        }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); /* 渐变背景 */
+            color: white; /* 文本颜色 */
+            align-self: flex-end; /* 右对齐 */
+            border-top-right-radius: 0; /* 右上圆角0 */
+        }
+
+        .system-message {
+            align-self: flex-start; /* 左对齐 */
+        }
+
+        .system-message .message-content {
+            background-color: var(--hover-color); /* 背景颜色 */
+            color: var(--text-color); /* 文本颜色 */
+            align-self: flex-start; /* 左对齐 */
+            border-top-left-radius: 0; /* 左上圆角0 */
+        }
+
+        /* 消息状态指示 */
+        .message-status {
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            margin-top: 0.25rem; /* 上边距 */
+            font-size: 0.75rem; /* 字体大小 */
+            color: var(--secondary-color); /* 文本颜色 */
+            justify-content: flex-end; /* 右对齐 */
+        }
+
+        /* 代码块样式 */
+        .message-content pre {
+            background-color: rgba(0, 0, 0, 0.05); /* 背景颜色 */
+            padding: 1rem; /* 内边距 */
+            border-radius: 4px; /* 圆角 */
+            overflow-x: auto; /* 水平滚动 */
+            margin: 0.5rem 0; /* 上下边距 */
+        }
+
+        .message-content code {
+            font-family: 'Courier New', Courier, monospace; /* 字体族 */
+            font-size: 0.9rem; /* 字体大小 */
+        }
+
+        /* 图片样式 */
+        .message-content img {
+            max-width: 100%; /* 最大宽度 */
+            border-radius: 4px; /* 圆角 */
+            margin: 0.5rem 0; /* 上下边距 */
+        }
+
+        .typing-indicator {
+            display: inline-block; /* 行内块 */
+            padding: 0.75rem 1rem; /* 内边距 */
+            background-color: var(--hover-color); /* 背景颜色 */
+            border-radius: 8px; /* 圆角 */
+            margin-bottom: 1rem; /* 下边距 */
+            box-shadow: var(--card-shadow); /* 卡片阴影 */
+        }
+
+        .typing-indicator span {
+            display: inline-block; /* 行内块 */
+            width: 8px; /* 宽度 */
+            height: 8px; /* 高度 */
+            border-radius: 50%; /* 圆形 */
+            background-color: var(--secondary-color); /* 背景颜色 */
+            margin-right: 4px; /* 右边距 */
+            animation: typing 1s infinite; /* 打字动画 */
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s; /* 延迟 */
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s; /* 延迟 */
+            margin-right: 0; /* 无右边距 */
+        }
+
+        @keyframes typing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .session-controls {
+            display: flex; /* 弹性布局 */
+            justify-content: space-between; /* 两端对齐 */
+            margin-bottom: 1rem; /* 下边距 */
+            gap: 0.5rem; /* 间距 */
+        }
+
+        .new-session-btn, .clear-history-btn {
+            background-color: var(--secondary-color); /* 背景颜色 */
+            color: white; /* 文本颜色 */
+            border: none; /* 无边框 */
+            padding: 0.5rem 1rem; /* 内边距 */
+            border-radius: 4px; /* 圆角 */
+            cursor: pointer; /* 鼠标指针 */
+            font-size: 0.9rem; /* 字体大小 */
+            transition: var(--transition); /* 过渡效果 */
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            gap: 0.3rem; /* 间距 */
+            flex: 1; /* 占满剩余空间 */
+        }
+
+        .new-session-btn:hover, .clear-history-btn:hover {
+            background-color: var(--primary-color); /* 悬停背景 */
+            transform: translateY(-2px); /* 上移 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 悬停阴影 */
+        }
+
+        .new-session-btn:active, .clear-history-btn:active {
+            transform: translateY(0); /* 恢复 */
+            box-shadow: none; /* 无阴影 */
+        }
+
+        .session-info {
+            font-size: 0.9rem; /* 字体大小 */
+            color: var(--secondary-color); /* 文本颜色 */
+            margin-top: 1rem; /* 上边距 */
+            padding-top: 1rem; /* 上内边距 */
+            border-top: 1px solid var(--border-color); /* 上边框 */
+        }
+
+        .history-title {
+            font-weight: bold; /* 粗体 */
+            margin-bottom: 1rem; /* 下边距 */
+            color: var(--primary-color); /* 文本颜色 */
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            gap: 0.5rem; /* 间距 */
+        }
+
+        .history-list {
+            flex: 1; /* 占满剩余空间 */
+            overflow-y: auto; /* 垂直滚动 */
+        }
+
+        .history-item {
+            padding: 0.75rem; /* 内边距 */
+            border-bottom: 1px solid var(--border-color); /* 下边框 */
+            cursor: pointer; /* 鼠标指针 */
+            transition: var(--transition); /* 过渡效果 */
+            border-radius: 4px; /* 圆角 */
+            margin-bottom: 0.5rem; /* 下边距 */
+            background-color: var(--hover-color); /* 背景颜色 */
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); /* 阴影 */
+        }
+
+        .history-item:hover {
+            background-color: rgba(74, 111, 165, 0.1); /* 悬停背景 */
+            transform: translateX(5px); /* 右移 */
+        }
+
+        /* 当前会话: 常驻高亮。
+           必须排在 :hover 之后 —— 两者优先级相同(都是"类+类"), 后写的赢,
+           于是悬停当前会话时不会被 :hover 的浅色冲淡, "选中"状态保持住。
+           色相沿用上面 :hover 那个 rgba(74,111,165) 只把透明度加浓, 不引入新配色;
+           左侧色条用 inset 内阴影而不是 border-left —— 后者会多占 3px 把这条文字挤偏。 */
+        .history-item.active {
+            background-color: rgba(74, 111, 165, 0.2); /* 选中背景(同色相加浓) */
+            box-shadow: inset 3px 0 0 var(--primary-color); /* 左侧色条, 不占位 */
+        }
+
+        .history-question {
+            font-weight: bold; /* 粗体 */
+            white-space: nowrap; /* 不换行 */
+            overflow: hidden; /* 溢出隐藏 */
+            text-overflow: ellipsis; /* 省略号 */
+            color: var(--text-color); /* 文本颜色 */
+        }
+
+        .history-answer {
+            color: var(--secondary-color); /* 文本颜色 */
+            white-space: nowrap; /* 不换行 */
+            overflow: hidden; /* 溢出隐藏 */
+            text-overflow: ellipsis; /* 省略号 */
+            font-size: 0.85rem; /* 字体大小 */
+        }
+
+        .loading-overlay {
+            position: absolute; /* 绝对定位 */
+            top: 0; /* 顶部 */
+            left: 0; /* 左侧 */
+            right: 0; /* 右侧 */
+            bottom: 0; /* 底部 */
+            background-color: rgba(255, 255, 255, 0.8); /* 背景颜色 */
+            display: flex; /* 弹性布局 */
+            justify-content: center; /* 水平居中 */
+            align-items: center; /* 垂直居中 */
+            z-index: 10; /* 层级 */
+            visibility: hidden; /* 隐藏 */
+            backdrop-filter: blur(2px); /* 背景模糊 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        body.dark-mode .loading-overlay {
+            background-color: rgba(33, 37, 41, 0.8); /* 深色模式背景 */
+        }
+
+        .spinner {
+            width: 50px; /* 宽度 */
+            height: 50px; /* 高度 */
+            border: 5px solid rgba(0, 0, 0, 0.1); /* 边框 */
+            border-radius: 50%; /* 圆形 */
+            border-left-color: var(--primary-color); /* 左边框颜色 */
+            animation: spin 1s linear infinite; /* 旋转动画 */
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 快捷回复区域 */
+        .quick-replies {
+            display: flex; /* 弹性布局 */
+            flex-wrap: wrap; /* 换行 */
+            gap: 0.5rem; /* 间距 */
+            margin-top: 0.5rem; /* 上边距 */
+        }
+
+        .quick-reply-btn {
+            padding: 0.3rem 0.75rem; /* 内边距 */
+            background-color: var(--hover-color); /* 背景颜色 */
+            border: 1px solid var(--border-color); /* 边框 */
+            border-radius: 20px; /* 圆角 */
+            color: var(--text-color); /* 文本颜色 */
+            cursor: pointer; /* 鼠标指针 */
+            font-size: 0.85rem; /* 字体大小 */
+            transition: var(--transition); /* 过渡效果 */
+        }
+
+        .quick-reply-btn:hover {
+            background-color: var(--primary-color); /* 悬停背景 */
+            color: white; /* 悬停颜色 */
+            border-color: var(--primary-color); /* 悬停边框 */
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column; /* 垂直排列 */
+            }
+
+            .sidebar {
+                width: 100%; /* 宽度100% */
+                border-right: none; /* 无边框 */
+                border-bottom: 1px solid var(--border-color); /* 下边框 */
+                max-height: 200px; /* 最大高度 */
+            }
+
+            .message-content {
+                max-width: 90%; /* 最大宽度90% */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>汽车售后知识库</h1>
+        <button class="theme-toggle" id="themeToggle">
+            <i class="fas fa-moon"></i>
+        </button>
+    </header>
+
+    <div class="container">
+        <div class="chat-container">
+            <div class="sidebar">
+                <!-- 搜索框 -->
+                <input type="text" class="search-box" id="searchBox" placeholder="搜索历史会话...">
+                
+                <!-- 会话控制按钮 -->
+                <div class="session-controls">
+                    <button class="new-session-btn" id="newSessionBtn">
+                        <i class="fas fa-plus"></i> 新会话
+                    </button>
+                    <button class="clear-history-btn" id="clearHistoryBtn">
+                        <i class="fas fa-trash"></i> 清除历史
+                    </button>
+                </div>
+                <div class="history-title">
+                    <i class="fas fa-history"></i> 历史会话
+                </div>
+                <div class="history-list" id="historyList">
+                    <!-- 历史会话将动态添加到这里 -->
+                </div>
+                <div class="session-info" id="sessionInfo"></div>
+            </div>
+
+            <div class="main-content">
+                <div class="chat-history" id="chatHistory">
+                    <!-- 消息将动态添加到这里 -->
+                    <div class="message system-message" id="welcomeMessage">
+                        <div class="message-header">
+                            <div class="avatar">智</div>
+                            <span>智能助手</span>
+                        </div>
+                        <div class="message-content">
+                            您好！我是智能问答助手，有什么我可以帮您的吗？
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-container">
+                    <div class="input-tools">
+                        <button class="tool-btn" id="imageBtn" title="图片">
+                            <i class="far fa-image"></i>
+                        </button>
+                    </div>
+                    <!-- 带图问答: 待发送图片缩略图, 发送成功后自动清空 -->
+                    <div class="image-preview" id="imagePreview" style="display: none;">
+                        <img id="imagePreviewImg" alt="待发送图片">
+                        <button class="image-preview-remove" id="imagePreviewRemove" title="移除图片">&times;</button>
+                    </div>
+                    <!-- 隐藏的文件选择器, 由工具栏的 #imageBtn 触发 -->
+                    <input type="file" id="imageInput" accept="image/*" hidden>
+                    <div class="input-group">
+                        <textarea class="chat-input" id="chatInput" placeholder="请输入您的问题..."
+                            rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'" spellcheck="false"></textarea>
+                        <button class="send-btn" id="sendBtn">
+                            <i class="fas fa-paper-plane"></i> 发送
+                        </button>
+                    </div>
+                    <!-- 快捷回复 -->
+                    <div class="quick-replies" id="quickReplies">
+                        <button class="quick-reply-btn">电动尾门怎么打开？</button>
+                        <button class="quick-reply-btn">座椅加热怎么开启？</button>
+                        <button class="quick-reply-btn">胎压报警怎么办？</button>
+                    </div>
+                </div>
+
+                <div class="loading-overlay" id="loadingOverlay">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let currentSessionId = null; // 当前会话 ID
+        let isResponseInProgress = false; // 是否正在处理响应
+        let socket = null; // WebSocket 连接
+        let isDarkMode = false; // 是否深色模式
+
+        // DOM 元素
+        const chatHistory = document.getElementById('chatHistory'); // 聊天历史容器
+        const chatInput = document.getElementById('chatInput'); // 输入框
+        const sendBtn = document.getElementById('sendBtn'); // 发送按钮
+        const historyList = document.getElementById('historyList'); // 历史列表
+        const sessionInfo = document.getElementById('sessionInfo'); // 会话信息
+        const newSessionBtn = document.getElementById('newSessionBtn'); // 新会话按钮
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn'); // 清除历史按钮
+        const loadingOverlay = document.getElementById('loadingOverlay'); // 加载遮罩
+        const themeToggle = document.getElementById('themeToggle'); // 主题切换按钮
+        const searchBox = document.getElementById('searchBox'); // 搜索框
+        const quickReplies = document.getElementById('quickReplies'); // 快捷回复
+        const quickReplyBtns = quickReplies.querySelectorAll('.quick-reply-btn'); // 快捷回复按钮
+        const imageBtn = document.getElementById('imageBtn'); // 图片按钮
+        const imageInput = document.getElementById('imageInput'); // 隐藏的文件选择器
+        const imagePreview = document.getElementById('imagePreview'); // 缩略图预览条
+        const imagePreviewImg = document.getElementById('imagePreviewImg'); // 预览图
+        const imagePreviewRemove = document.getElementById('imagePreviewRemove'); // 移除图片按钮
+        // 待发送图片的 base64 data URL; null 表示本轮不带图(走纯文本四级级联)
+        let pendingImage = null;
+
+        const SESSION_STORAGE_KEY = 'carragSessionId'; // 刷新后复用会话(不存就每次刷新都换新会话)
+        const HISTORY_PAGE_SIZE = 20;                  // 聊天区一次拉多少轮
+        let oldestLoadedId = null;   // 已加载最旧一轮的行 id; 向上翻页的游标
+        let hasOlder = false;        // 服务端是否还有更旧的轮次
+        let isLoadingOlder = false;  // 防上滑时并发翻页
+        let isLoadingHistory = false;// 程序化渲染期间不触发上滑翻页
+
+        // API URL 前缀，根据部署环境调整
+        const API_BASE_URL = ''; // 如果 API 和前端在同一域，可以留空
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 检查本地存储中的主题设置
+            isDarkMode = localStorage.getItem('darkMode') === 'true';
+            updateTheme();
+
+            // 复用上次的会话(存在 localStorage 里)。不存的话每次刷新都新建一个,
+            //   老会话还在 MySQL 里但前端再也回不去 —— 这正是"加载历史对话"失效的原因
+            const savedSessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+            if (savedSessionId) {
+                currentSessionId = savedSessionId;
+                sessionInfo.textContent = `会话ID: ${currentSessionId.slice(0, 8)}...`;
+                await loadSessionTurns();
+            } else {
+                await createNewSession();
+            }
+            await loadSessionList();
+
+            // 事件监听器
+            sendBtn.addEventListener('click', sendMessage); // 发送按钮点击事件
+            chatInput.addEventListener('keydown', (e) => { // 输入框键盘事件
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            // 向上滑动到接近顶部 -> 拉更旧的轮次
+            chatHistory.addEventListener('scroll', () => {
+                if (chatHistory.scrollTop <= 40) loadOlderTurns();
+            });
+
+            newSessionBtn.addEventListener('click', createNewSession); // 新会话按钮点击事件
+            clearHistoryBtn.addEventListener('click', clearHistory); // 清除历史按钮点击事件
+            themeToggle.addEventListener('click', toggleTheme); // 主题切换按钮点击事件
+            searchBox.addEventListener('input', searchHistory); // 搜索框输入事件
+
+            // 快捷回复按钮点击事件
+            quickReplyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    chatInput.value = btn.textContent;
+                    chatInput.style.height = 'auto';
+                    chatInput.style.height = chatInput.scrollHeight + 'px';
+                    sendMessage();
+                });
+            });
+
+            // 工具按钮点击事件
+            // 图片按钮 -> 打开隐藏的文件选择器
+            imageBtn.addEventListener('click', () => imageInput.click());
+            // 选中文件 -> 读成 base64 data URL 并显示预览
+            imageInput.addEventListener('change', () => {
+                const file = imageInput.files && imageInput.files[0];
+                if (file) readImageFile(file);
+                // 清空 value, 否则连续选同一张图不会再触发 change
+                imageInput.value = '';
+            });
+            // 移除已选图片 -> 退回纯文本链路
+            imagePreviewRemove.addEventListener('click', () => setPendingImage(null));
+            // 粘贴图片: 截图后直接 Ctrl+V, 不必先存成文件
+            chatInput.addEventListener('paste', (e) => {
+                const items = (e.clipboardData || {}).items || [];
+                for (const item of items) {
+                    if (item.type && item.type.startsWith('image/')) {
+                        e.preventDefault(); // 拦掉默认粘贴行为(否则粘进去的是文件名/空)
+                        readImageFile(item.getAsFile());
+                        break;
+                    }
+                }
+            });
+        });
+
+        // 切换主题
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('darkMode', isDarkMode);
+            updateTheme();
+        }
+
+        // 更新主题
+        function updateTheme() {
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                document.body.classList.remove('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+        }
+
+        // 搜索历史会话
+        function searchHistory() {
+            const searchTerm = searchBox.value.toLowerCase();
+            const historyItems = historyList.querySelectorAll('.history-item');
+
+            historyItems.forEach(item => {
+                const question = item.querySelector('.history-question').textContent.toLowerCase();
+                const answer = item.querySelector('.history-answer').textContent.toLowerCase();
+
+                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 创建新会话
+        async function createNewSession() {
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/create_session`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error('创建会话失败');
+                }
+
+                const data = await response.json();
+                currentSessionId = data.session_id; // 更新当前会话 ID
+                localStorage.setItem(SESSION_STORAGE_KEY, currentSessionId); // 刷新后还能回到这个会话
+
+                // 更新会话信息
+                sessionInfo.textContent = `会话ID: ${currentSessionId.slice(0, 8)}...`;
+
+                // 清空聊天历史
+                clearChatHistory();
+
+                // 新会话还没有任何历史 -> loadSessionTurns 只负责把游标置空
+                await loadSessionTurns();
+                await loadSessionList();
+
+            } catch (error) {
+                console.error('创建会话错误:', error);
+                alert('创建会话失败，请刷新页面重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 清除历史记录
+        async function clearHistory() {
+            if (!currentSessionId) return;
+
+            if (!confirm('确定要清除所有历史记录吗？')) {
+                return;
+            }
+
+            showLoading();
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/history/${currentSessionId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error('清除历史记录失败');
+                }
+
+                // 清空历史列表
+                historyList.innerHTML = '';
+
+                // 清空聊天历史
+                clearChatHistory();
+
+                // 添加欢迎消息
+                chatHistory.innerHTML = `
+                    <div class="message system-message">
+                        <div class="message-header">
+                            <div class="avatar">智</div>
+                            <span>智能助手</span>
+                        </div>
+                        <div class="message-content">
+                            历史记录已清除，有什么我可以帮您的吗？
+                        </div>
+                    </div>
+                `;
+
+                // 本会话已被清空 -> 左侧列表要重拉(轮数/首句都变了)
+                await loadSessionList();
+
+            } catch (error) {
+                console.error('清除历史记录错误:', error);
+                alert('清除历史记录失败');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 清空聊天历史
+        function clearChatHistory() {
+            chatHistory.innerHTML = `
+                <div class="message system-message" id="welcomeMessage">
+                    <div class="message-header">
+                        <div class="avatar">智</div>
+                        <span>智能助手</span>
+                    </div>
+                    <div class="message-content">
+                        您好！我是智能问答助手，有什么我可以帮您的吗？
+                    </div>
+                </div>
+            `;
+        }
+
+        // 显示加载遮罩
+        function showLoading() {
+            loadingOverlay.style.visibility = 'visible';
+        }
+
+        // 隐藏加载遮罩
+        function hideLoading() {
+            loadingOverlay.style.visibility = 'hidden';
+        }
+
+        // 浏览器端图片长边上限, 与后端 conf.MM_PAGE_IMAGE_MAX_SIDE 对齐
+        const IMAGE_MAX_SIDE = 1400;
+
+        // 把用户选中的图片读成 base64 data URL, 存起来并显示预览
+        function readImageFile(file) {
+            if (!file) return;
+            // 兜底: 误选了非图片文件就忽略并提示, 别把坏数据发给后端
+            if (file.type && !file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onerror = () => alert('图片读取失败, 请重试');
+            reader.onload = () => {
+                // 先解析成 Image 再决定要不要缩 —— 需要真实宽高才能等比缩放
+                const img = new Image();
+                img.onerror = () => alert('图片解析失败, 请换一张');
+                img.onload = () => setPendingImage(downscaleToDataUrl(img));
+                img.src = reader.result;
+            };
+            // 产出 "data:image/...;base64,..." —— 后端 load_image_from_base64 认的正是这个格式
+            reader.readAsDataURL(file);
+        }
+
+        // 长边超过 IMAGE_MAX_SIDE 就等比缩小并转 JPEG:
+        //   手机原图动辄数 MB, base64 还要再涨 1/3, 不缩会撑大 WebSocket 消息、也白烧 qwen-vl 的 token
+        function downscaleToDataUrl(img) {
+            const scale = Math.min(1, IMAGE_MAX_SIDE / Math.max(img.width, img.height));
+            // 本来就够小 -> 原样返回, 不做无谓的有损重编码
+            if (scale >= 1) return img.src;
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            return canvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        // 设置/清空待发送图片: 同步更新内存状态 + 缩略图预览条
+        function setPendingImage(dataUrl) {
+            pendingImage = dataUrl || null;
+            if (pendingImage) {
+                imagePreviewImg.src = pendingImage;
+                imagePreview.style.display = 'flex';
+            } else {
+                imagePreviewImg.removeAttribute('src');
+                imagePreview.style.display = 'none';
+            }
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const query = chatInput.value.trim();
+            // 本轮要发的图: 先取快照, 发完立即清空 —— 保证图片只作用于当前这一问
+            const imageToSend = pendingImage;
+
+            // 纯文本必须非空; 带图时允许不写文字(只凭图片提问)
+            if ((!query && !imageToSend) || isResponseInProgress) return;
+
+            // 重置输入框与图片预览
+            chatInput.value = '';
+            chatInput.style.height = 'auto';
+            setPendingImage(null);
+
+            // 添加用户消息到聊天窗口(带图时把缩略图一并显示, 便于回看)
+            addMessage('user', query, imageToSend);
+
+            // 设置正在响应标志
+            isResponseInProgress = true;
+
+            // 添加正在输入指示器
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'typing-indicator';
+            typingIndicator.innerHTML = '<span></span><span></span><span></span>';
+            chatHistory.appendChild(typingIndicator);
+
+            // 滚动到底部
+            scrollToBottom();
+
+            try {
+                // 发送查询请求
+                const response = await fetch(`${API_BASE_URL}/api/query`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        session_id: currentSessionId,
+                        // ⚠️ 带图时后端**收下就丢**: POST /api/query 见到 image 立刻回 is_streaming=true,
+                        //   既不查缓存也不解析。所以这趟传的图是**白跑的** —— 真正管用的是下面
+                        //   handleStreamingResponse 里随 WebSocket 送出、后端才 load_image_from_base64
+                        //   + 落盘的同一张图。带图 L1 缓存命中的是 WS 那趟, 不是这趟。
+                        image: imageToSend
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('查询失败');
+                }
+
+                const data = await response.json();
+
+                // 移除输入指示器
+                if (typingIndicator.parentNode) {
+                    chatHistory.removeChild(typingIndicator);
+                }
+
+                // 如果需要流式输出，使用 WebSocket
+                if (data.is_streaming) {
+                    // 创建系统消息容器，但内容为空
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message system-message';
+
+                    const headerElement = document.createElement('div');
+                    headerElement.className = 'message-header';
+                    headerElement.innerHTML = `
+                        <div class="avatar">智</div>
+                        <span>智能助手</span>
+                    `;
+
+                    const contentElement = document.createElement('div');
+                    contentElement.className = 'message-content';
+                    contentElement.innerHTML = ''; // 初始化为空
+
+                    messageElement.appendChild(headerElement);
+                    messageElement.appendChild(contentElement);
+                    chatHistory.appendChild(messageElement);
+
+                    // 建立 WebSocket 连接进行流式输出
+                    await handleStreamingResponse(query, contentElement, imageToSend);
+                } else {
+                    // 直接添加格式化后的答案
+                    addMessage('system', data.answer);
+                }
+
+                // 只刷新左侧列表, **不重铺聊天区** —— 问候语与错误消息不入历史表,
+                //   重铺(走服务端数据)会把它们从界面上抹掉。本轮用户图仍是本地缩略图。
+                await loadSessionList();
+
+            } catch (error) {
+                console.error('发送消息错误:', error);
+
+                // 移除输入指示器
+                if (typingIndicator.parentNode) {
+                    chatHistory.removeChild(typingIndicator);
+                }
+
+                // 添加错误消息
+                addMessage('system', `抱歉，发生错误: ${error.message}`);
+            } finally {
+                // 清除正在响应标志
+                isResponseInProgress = false;
+
+                // 滚动到底部
+                scrollToBottom();
+            }
+        }
+
+        // 处理流式响应
+        async function handleStreamingResponse(query, contentElement, image = null) {
+            // 关闭现有连接
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.close();
+            }
+
+            return new Promise((resolve, reject) => {
+                // WebSocket URL
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${wsProtocol}//${window.location.host}${API_BASE_URL}/api/stream`;
+
+                // 创建 WebSocket 连接
+                socket = new WebSocket(wsUrl);
+
+                let accumulatedContent = ''; // 累积流式内容
+
+                // 连接建立时
+                socket.onopen = function() {
+                    console.log('WebSocket 连接已建立');
+
+                    // 发送查询请求(带图时图片随这一趟真正送出)
+                    socket.send(JSON.stringify({
+                        query: query,
+                        session_id: currentSessionId,
+                        image: image
+                    }));
+                };
+
+                // 接收消息时
+                socket.onmessage = function(event) {
+                    const data = JSON.parse(event.data);
+
+                    switch (data.type) {
+                        case 'start':
+                            console.log('流式响应开始');
+                            break;
+
+                        case 'token':
+                            // 追加 token 到内容
+                            accumulatedContent += data.token;
+                            // 使用 marked.js 解析 Markdown 格式
+                            contentElement.innerHTML = marked.parse(accumulatedContent);
+                            scrollToBottom();
+                            break;
+
+                        case 'end':
+                            console.log('流式响应结束');
+                            // 收尾帧带着本次回答引用的页。这一条**必须**在这里接:
+                            //   流式气泡是上面手写 DOM 造出来的, 不走 buildMessage ——
+                            //   只改 buildMessage 的话, 流式当场有页码、一刷新就没了。
+                            appendPageStrip(contentElement, data.pages);
+                            socket.close();
+                            resolve();
+                            break;
+
+                        case 'error':
+                            console.error('流式响应错误:', data.error);
+                            contentElement.innerHTML += `<p>[错误: ${data.error}]</p>`;
+                            socket.close();
+                            reject(new Error(data.error));
+                            break;
+                    }
+                };
+
+                // 发生错误时
+                socket.onerror = function(error) {
+                    console.error('WebSocket 错误:', error);
+                    contentElement.innerHTML += '<p>[连接错误]</p>';
+                    reject(error);
+                };
+
+                // 连接关闭时
+                socket.onclose = function() {
+                    console.log('WebSocket 连接已关闭');
+                    resolve();
+                };
+            });
+        }
+
+        // ---- 回答下方的"依据第 X 页" + 页图缩略图 ----
+        // 后端已经算好 label(书页上印的页码 = 0 基页号+1)和 url, 前端**不做任何算术、不拼路径**。
+        // 空数组 -> 什么都不加(不是加一个空壳): 老记录、L2/L3 的回答、拒答都走这一支。
+        function appendPageStrip(contentElement, pages) {
+            // 只认这一个判据。Array.isArray 同时兜住"键不存在(undefined)""null""[]"三种情况 ——
+            //   老服务端配新前端时 data.pages 就是 undefined。
+            if (!Array.isArray(pages) || !pages.length) return;
+
+            const strip = document.createElement('div');
+            strip.className = 'page-strip';
+
+            const label = document.createElement('div');
+            label.className = 'page-strip-label';
+            label.textContent = `依据第 ${pages.map(p => p.label).join('、')} 页`;
+            strip.appendChild(label);
+
+            const thumbs = document.createElement('div');
+            thumbs.className = 'page-thumbs';
+            pages.forEach(p => {
+                const img = document.createElement('img');
+                img.className = 'page-thumb';
+                img.src = p.url;
+                img.alt = `手册第 ${p.label} 页`;
+                img.title = `第 ${p.label} 页(点击看大图)`;
+                // 大图地址与缩略图同一个 url —— 页图不可变且服务端给了一周缓存,
+                //   点开时命中的是浏览器已有的那份, 不会再下一次
+                img.dataset.full = p.url;
+                thumbs.appendChild(img);
+            });
+            strip.appendChild(thumbs);
+            contentElement.appendChild(strip);
+        }
+
+        // 大图查看: 全局单例, 首次调用才建 —— 页面上没点过缩略图就一个节点都不多
+        let lightboxEl = null;
+
+        function ensureLightbox() {
+            if (lightboxEl) return lightboxEl;
+            lightboxEl = document.createElement('div');
+            lightboxEl.className = 'lightbox hidden';
+            const img = document.createElement('img');
+            img.alt = '手册页大图';
+            const hint = document.createElement('div');
+            hint.className = 'lightbox-hint';
+            hint.textContent = '点击空白处或按 ESC 关闭';
+            lightboxEl.appendChild(img);
+            lightboxEl.appendChild(hint);
+            // 只关"点遮罩本身"这一种。不判 e.target === lightboxEl 的话, 点图也会关掉。
+            lightboxEl.addEventListener('click', e => {
+                if (e.target === lightboxEl) closeLightbox();
+            });
+            document.body.appendChild(lightboxEl);
+            return lightboxEl;
+        }
+
+        function openLightbox(src) {
+            const box = ensureLightbox();
+            if (!box.classList.contains('hidden')) return;   // 已开着就不重开(防重复)
+            box.querySelector('img').src = src;
+            box.classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            if (lightboxEl) lightboxEl.classList.add('hidden');
+        }
+
+        // ESC 关闭。绑在 document 上只绑一次, 与消息节点数量无关。
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        // 打开大图用**事件委托**: 消息是动态插的(流式当场插、历史回显批量插、上滑翻页又插一批),
+        //   逐个缩略图绑监听必然漏掉后面那些。绑一次, 靠 class 认。
+        chatHistory.addEventListener('click', e => {
+            const thumb = e.target.closest ? e.target.closest('.page-thumb') : null;
+            if (thumb && thumb.dataset.full) openLightbox(thumb.dataset.full);
+        });
+
+        // 造一条消息节点, 不插入 DOM —— 追加与向上翻页(prepend)共用这一半
+        // pages: 回答引用了哪几页([{page,label,url}]), 由 /api/history 或 WS 收尾帧给;
+        //        非助手消息传 null。
+        function buildMessage(type, content, imageDataUrl = null, pages = null) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `message ${type === 'user' ? 'user-message' : 'system-message'}`;
+
+            const headerElement = document.createElement('div');
+            headerElement.className = 'message-header';
+            if (type === 'user') {
+                headerElement.innerHTML = `
+                    <div class="avatar">用</div>
+                    <span>我</span>
+                `;
+            } else {
+                headerElement.innerHTML = `
+                    <div class="avatar">智</div>
+                    <span>智能助手</span>
+                `;
+            }
+
+            const contentElement = document.createElement('div');
+            contentElement.className = 'message-content';
+            // 带图时把缩略图放在文字上方, 让用户看清这一问带了哪张图
+            if (imageDataUrl) {
+                const img = document.createElement('img');
+                img.src = imageDataUrl;
+                img.className = 'message-image';
+                img.alt = '提问图片';
+                contentElement.appendChild(img);
+            }
+            // 使用 marked.js 解析 Markdown 格式（支持换行和代码块）
+            //   带图无文字时 content 为空串 -> marked.parse('') = '', 不会报错, 上方 img 保留
+            if (content) {
+                const textElement = document.createElement('div');
+                textElement.innerHTML = marked.parse(content);
+                contentElement.appendChild(textElement);
+            }
+
+            messageElement.appendChild(headerElement);
+            messageElement.appendChild(contentElement);
+            // 引用页缩略图放**正文之后、气泡之内**(用户指定的位置)
+            appendPageStrip(contentElement, pages);
+            return messageElement;
+        }
+
+        // 添加消息到聊天窗口末尾（支持 Markdown 格式）
+        function addMessage(type, content, imageDataUrl = null, pages = null) {
+            chatHistory.appendChild(buildMessage(type, content, imageDataUrl, pages));
+            scrollToBottom();
+        }
+
+        // 一轮问答 = 一条用户消息(可能带图) + 一条助手消息
+        function renderTurn(item) {
+            addMessage('user', item.question, item.image_url);
+            // item.pages 由 GET /api/history 给出; 老记录(该列为 NULL)是空数组 -> 不渲染
+            addMessage('system', item.answer, null, item.pages);
+        }
+
+        // 加载当前会话**最新一页**, 并记下向上翻页的游标
+        async function loadSessionTurns() {
+            if (!currentSessionId) return;
+            isLoadingHistory = true;
+            // 发请求前锁住"这一趟是给哪个会话拉的"。await 期间用户可能已经点了别的会话,
+            //   回来时 currentSessionId 就变了 —— 那这一页属于**上个会话**, 不能再往界面上放。
+            const sid = currentSessionId;
+            try {
+                const resp = await fetch(
+                    `${API_BASE_URL}/api/history/${sid}?limit=${HISTORY_PAGE_SIZE}`);
+                // 每个 await 之后都要重新确认。这一句放在 !resp.ok 之前: 被放弃的请求
+                //   就算失败也不该为它打一条 error 日志(那不是故障, 是我们主动不要了)。
+                if (sid !== currentSessionId) return;
+                if (!resp.ok) throw new Error('获取历史记录失败');
+                const data = await resp.json();
+                if (sid !== currentSessionId) return;
+
+                clearChatHistory();
+                // 接口返回的是时间正序
+                data.history.forEach(renderTurn);
+                // 游标 = 本页**最旧**一轮的行 id(第一页时它就是数组第一个)
+                oldestLoadedId = data.history.length ? data.history[0].id : null;
+                hasOlder = data.has_more;
+                scrollToBottom();
+                // 一屏没铺满就够不着"上滑"这个动作, 得主动再拉一页
+                if (hasOlder && chatHistory.scrollHeight <= chatHistory.clientHeight) {
+                    // 必须先放掉本函数自己的标志, 否则 loadOlderTurns 开头的守卫
+                    //   (里面有 isLoadingHistory) 会当场 return —— 这次调用就成了死调用,
+                    //   而内容矮于视口时不会有 scroll 事件, 用户就再也看不到更旧的轮次。
+                    //   与下面 loadOlderTurns 里放掉 isLoadingOlder 是同一个写法。
+                    isLoadingHistory = false;
+                    await loadOlderTurns();
+                }
+            } catch (e) {
+                console.error('加载会话对话错误:', e);
+            } finally {
+                // 只清**自己那份**。这个标志可能已经属于另一条在途的 loadSessionTurns:
+                //   会话被切走后本函数会提前 return, 若无条件清, 就会把**新会话那条**在途
+                //   请求的 true 抹掉 —— 那等于对外宣布"没有请求在途", 于是一次上滑就能拿
+                //   旧游标发车(见 switchSession 里那段的完整链路)。
+                //   判据用 sid 是不是还等于 currentSessionId: 相等才说明这条链仍是"当前会话那条",
+                //   清自己的; 不等就闭嘴, 让当前会话那条链自己收尾。
+                if (sid === currentSessionId) isLoadingHistory = false;
+            }
+        }
+
+        // 把一轮插到**欢迎语之后、已有消息之前**
+        function prependTurn(item) {
+            const anchor = document.getElementById('welcomeMessage');
+            const before = anchor ? anchor.nextSibling : chatHistory.firstChild;
+            chatHistory.insertBefore(buildMessage('user', item.question, item.image_url), before);
+            // 这条路径是**直调 buildMessage**(不经过 addMessage) —— 引用页参数别漏
+            chatHistory.insertBefore(buildMessage('system', item.answer, null, item.pages), before);
+        }
+
+        // 向上滑动加载更旧的轮次
+        async function loadOlderTurns() {
+            if (!currentSessionId || !hasOlder || isLoadingOlder || isLoadingHistory) return;
+            isLoadingOlder = true;
+            // 同 loadSessionTurns: 锁住这一趟属于哪个会话。此处尤其重要 —— 这条函数会
+            //   递归地一页页往下拉, 一旦会话在半途被切走, 被放弃的那条链必须**整条停住**:
+            //   它下面既会动 oldestLoadedId / hasOlder(把游标状态搅乱), 又会再递归拉下一页。
+            const sid = currentSessionId;
+            try {
+                const resp = await fetch(
+                    `${API_BASE_URL}/api/history/${sid}` +
+                    `?limit=${HISTORY_PAGE_SIZE}&before_id=${oldestLoadedId}`);
+                // 每个 await 之后都重新确认, 且都是 return(不是"跳过渲染继续往下走")——
+                //   下面所有改动游标与渲染的语句都在这些 return 之后, 所以被放弃的链
+                //   既碰不到游标, 也到不了末尾那次递归。会话切走后它**不可能再拉下一页**。
+                if (sid !== currentSessionId) return;
+                if (!resp.ok) throw new Error('获取更早记录失败');
+                const data = await resp.json();
+                if (sid !== currentSessionId) return;
+                if (!data.history.length) { hasOlder = false; return; }
+
+                // 往前面插内容会让滚动位置跳走, 所以插入前后要把差值补回 scrollTop。
+                //   .chat-history 有 scroll-behavior: smooth —— 补 scrollTop 会被它接管,
+                //   表现为"内容自己慢慢滑走"。补位置那一刻必须先临时置成 auto。
+                const prevHeight = chatHistory.scrollHeight;
+                const prevTop = chatHistory.scrollTop;
+                chatHistory.style.scrollBehavior = 'auto';
+
+                // 倒着插到欢迎语后面, 结果才是时间正序
+                for (let i = data.history.length - 1; i >= 0; i--) prependTurn(data.history[i]);
+                chatHistory.scrollTop = prevTop + (chatHistory.scrollHeight - prevHeight);
+                chatHistory.style.scrollBehavior = '';
+
+                oldestLoadedId = data.history[0].id;
+                hasOlder = data.has_more;
+                // 仍然够不着顶部就继续拉(内容太少时不会有 scroll 事件)
+                if (hasOlder && chatHistory.scrollHeight <= chatHistory.clientHeight) {
+                    isLoadingOlder = false;
+                    await loadOlderTurns();
+                }
+            } catch (e) {
+                console.error('加载更早记录错误:', e);
+            } finally {
+                isLoadingOlder = false;
+            }
+        }
+
+        // 左侧"历史会话"面板: 列全部会话, 点击切换
+        async function loadSessionList() {
+            try {
+                // 显式带上限: /api/sessions 的服务端默认是 50, 而接口本身允许到 500。
+                //   不写就继承 50, 超过 50 个会话时**静默截断** —— 列表看着正常, 只是少了几条,
+                //   没有任何报错。这里只是把服务端已经声明的上限写下来, 不改任何翻页语义。
+                const resp = await fetch(`${API_BASE_URL}/api/sessions?limit=500`);
+                if (!resp.ok) throw new Error('获取会话列表失败');
+                const data = await resp.json();
+
+                historyList.innerHTML = '';
+                data.sessions.forEach(s => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    if (s.session_id === currentSessionId) item.classList.add('active');
+
+                    // 必须用 textContent: first_question 是用户输入, 走 innerHTML 会被当成 HTML
+                    const q = document.createElement('div');
+                    q.className = 'history-question';
+                    q.textContent = (s.first_question || '(无问题)').slice(0, 30);
+
+                    const a = document.createElement('div');
+                    a.className = 'history-answer';
+                    const when = (s.last_at || '').replace('T', ' ').slice(0, 16);
+                    a.textContent = `${s.turns} 轮 · ${when}`;
+
+                    item.appendChild(q);
+                    item.appendChild(a);
+                    item.addEventListener('click', () => switchSession(s.session_id));
+                    historyList.appendChild(item);
+                });
+            } catch (e) {
+                console.error('加载会话列表错误:', e);
+            }
+        }
+
+        // 切换会话: 换 id -> 落 localStorage -> 重铺聊天区 -> 刷新列表高亮
+        async function switchSession(sessionId) {
+            if (!sessionId || sessionId === currentSessionId) return;
+            currentSessionId = sessionId;
+            // 游标必须跟着会话一起换。这两个变量是**上一个会话**的:
+            //   新会话这一页还没回来(loadSessionTurns 是异步的), 中间若有一次上滑,
+            //   loadOlderTurns 的守卫会拿**旧会话的 hasOlder=true** 放行, 再用
+            //   **旧会话的 before_id** 去查新会话 —— 回来的响应本身是"新鲜"的,
+            //   所以 sid 守卫拦不住它, 它会真的渲染, 表现为新会话里混进旧会话的轮次
+            //   (或把 hasOlder 静默置 false, 从此翻不动页)。
+            //   先置空/置 false, 守卫就在 !hasOlder 这一项上短路了。
+            hasOlder = false;
+            oldestLoadedId = null;
+            localStorage.setItem(SESSION_STORAGE_KEY, currentSessionId);
+            sessionInfo.textContent = `会话ID: ${currentSessionId.slice(0, 8)}...`;
+            await loadSessionTurns();
+            await loadSessionList();
+        }
+
+        // 滚动到底部
+        function scrollToBottom() {
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+# docker-compose.yml — carRAG 本地数据依赖（多服务，结构与 ResearchAgent 同构）
+# 启动：docker compose up -d
+#
+# 形态说明：与 ResearchAgent 一致 —— 每个数据服务一个官方镜像容器、挂命名卷、
+#   对外端口全换到高位（避开其它项目与 docker 默认）。应用层（FastAPI + BERT +
+#   ColQwen2）仍在宿主机跑，通过 localhost 连各容器 —— 见 config.ini 与 README「启动」。
+#
+# 端口策略（避开常见位与 RA 的 5433/19531/30000、以及 research-agent 的 19531）：
+#   MySQL   13306:3306
+#   Redis   16379:6379
+#   Milvus  19538:19530
+#   Attu    13000:3000（Milvus UI，避开 RA 已占的 30000）
+#   etcd / minio：只在 compose 网络内部，不暴露任何宿主端口。
+#
+# 连接规格（config.ini，勿单独改）：
+#   [mysql]   host=localhost port=13306 user=root password=123456 database=subjects_kg
+#   [redis]   host=localhost port=16379 password=1234 db=0
+#   [milvus]  host=localhost port=19538
+#
+# 数据初始化 = 独立脚本（不属于 Docker，见 README「数据初始化」）：
+#   建库             MySQL 官方镜像首次启动自动执行 scripts/init_db.sql（建 subjects_kg）
+#   灌 jpkb(9755 条) python mysql_qa/db/mysql_client.py --force
+#   建 Milvus 三条腿 scripts/build_text_kb.py / build_multimodal_kb.py / build_fde_kb.py
+# ============================================================
+
+services:
+
+  # ── MySQL 主库（对外 13306，避开常见 3306）──
+  mysql:
+    image: mysql:8.0
+    container_name: carrag_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456            # 对齐 config.ini [mysql] password=123456
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql_data:/var/lib/mysql
+      # 容器首次启动自动建库（镜像原生机制，仅建库；数据灌入走 mysql_client.py --force）
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init_db.sql:ro
+    ports:
+      - "13306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-p123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # ── Redis 缓存（对外 16379，避开常见 6379）──
+  redis:
+    image: redis:6-alpine
+    container_name: carrag_redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "1234", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    ports:
+      - "16379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "1234", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── etcd（Milvus 元数据存储，仅内部，不对外）──
+  etcd:
+    image: quay.io/coreos/etcd:v3.5.14
+    container_name: carrag_etcd
+    restart: unless-stopped
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+    command: >
+      etcd
+      --advertise-client-urls=http://127.0.0.1:2379
+      --listen-client-urls=http://0.0.0.0:2379
+      --data-dir=/etcd
+    volumes:
+      - etcd_data:/etcd
+
+  # ── MinIO（Milvus 向量文件存储，仅内部，不对外）──
+  minio:
+    image: minio/minio:latest
+    container_name: carrag_minio
+    restart: unless-stopped
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Milvus 向量库（对外 19538，避开常见 19530 与 RA 的 19531）──
+  milvus:
+    image: milvusdb/milvus:v2.6.4
+    container_name: carrag_milvus
+    restart: unless-stopped
+    command: ["milvus", "run", "standalone"]
+    environment:
+      ETCD_ENDPOINTS: etcd:2379               # 连内部 etcd
+      MINIO_ADDRESS: minio:9000               # 连内部 MinIO
+      MINIO_ACCESS_KEY_ID: minioadmin
+      MINIO_SECRET_ACCESS_KEY: minioadmin
+    volumes:
+      - milvus_data:/var/lib/milvus
+    ports:
+      - "19538:19530"
+    depends_on:
+      etcd:
+        condition: service_started
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ── Attu（Milvus 可视化管理界面，对外 13000，避开 RA 已占的 30000）──
+  attu:
+    image: zilliz/attu:v2.4.12
+    container_name: carrag_attu
+    restart: unless-stopped
+    environment:
+      # Attu 在 Docker 内部访问 Milvus，必须用服务名 milvus:19530，不能写 localhost:19538
+      MILVUS_URL: milvus:19530
+      SERVER_PORT: "3000"
+      TZ: Asia/Shanghai
+    ports:
+      - "13000:3000"
+    depends_on:
+      milvus:
+        condition: service_healthy
+
+# ── 数据卷（持久化，重启容器数据不丢失）──
+volumes:
+  mysql_data:
+  redis_data:
+  etcd_data:
+  minio_data:
+  milvus_data:

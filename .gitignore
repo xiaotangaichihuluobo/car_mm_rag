@@ -1,0 +1,107 @@
+# ============ 密钥 / 敏感信息 (严禁提交) ============
+.env
+.env.*
+*.pem
+config.ini
+
+# ============ Python ============
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ============ 虚拟环境 ============
+.venv/
+venv/
+env/
+ENV/
+
+# ============ IDE / 编辑器 ============
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# ============ 日志 ============
+logs/
+*.log
+
+# ============ 模型 / 向量库数据 (体积大, 可重新下载) ============
+models/
+# ColQwen2 本地权重(runtime 需要, 但体积 4.2GB、不上版本库)。见 config.ini [multimodal]。
+# 2026-09-28: 从 .smoke/colqwen2_local 迁到 rag_qa/models/, 上面 models/ 规则已覆盖;
+#   保留此行仅为显式标注其存在(runtime 必需, 勿删)。
+rag_qa/models/colqwen2_local/
+# 训练中间产物(checkpoint + 训练日志)。train_classifier.py 的 output_dir 指到
+# rag_qa/bert_results, save_total_limit=1 仍会留下**一个 1.2G 的 checkpoint** ——
+# 2026-09-12 实测: 路径早就锚好了, 唯独 ignore 规则一直没加, 于是它以未跟踪状态躺在
+# 工作区里, 一次 `git add -A` 就是 1.2G 进库。真正要留的权重在 models/ 下(已忽略)。
+bert_results/
+*.onnx
+*.pkl
+*.h5
+chromaDB/
+
+# ============ 数据集 (可重新下载, 不入库) ============
+# 注: 用 /DATA/ 锚定到仓库根目录, 避免 Windows 大小写不敏感误伤 mysql_qa/data/
+/DATA/
+
+# 天池那套语料与评估数据 —— car_data/ 整个目录不入库。
+# 2026-09-13 它们从 /DATA/Tianchi/ 挪进项目内, 目的是让项目自包含, 不再依赖外面的目录布局。
+#   但**仍是可重新下载的比赛数据集**(train_a.pdf 14.9MB + 103 道测试题 + baseline 结果),
+#   所以沿用上面同一条策略: 不入库。别因为"它现在在项目里"就顺手提交 ——
+#   15MB 二进制进库, 换机器时它本来就要重下(见 rag_qa/classify_data 的报错提示)。
+# 忽略**整个目录**而不是逐个文件: 里面三份没有一份该进库, 而目录名够独特(带 car_),
+#   不像 `data/` 那样会误伤别处; 以后再往里丢新下的数据也自动挡住。
+# 注: git 根就是项目目录本身(04-代码/integrated_qa_system/), 代码已在根上,
+#   所以忽略规则直接写 relative 根路径, **不要再带 integrated_qa_system/ 前缀**(旧前缀锚在了
+#   一层多余的嵌套目录上, 永远匹配不上 → 一次 git add -A 就会把 15MB PDF / 页图 / 向量全打进库)。
+# 忽略 rag_qa/data/ 整个目录: car_data/(手册+评估题)、pages/(渲染页图)、page_vecs/(编码向量)、
+#   eval/(评估中间结果) —— 全是可重下/可重建的中间产物。
+rag_qa/data/
+
+# L3 训练数据的生成缓存: 逐页手册原文 + 每页生成结果, 供断点续跑用(见
+# rag_qa/classify_data/gen_intent_dataset.py)。它是**中间产物**, 且内容派生于上面那份
+# 不入库的 PDF —— 真正要入库的是它汇总出的 car_intent_5000.json, 那个**不忽略**。
+# 名字带下划线且够独特, 不会像 `data/` 那样误伤别的目录, 所以不锚定。
+_gen_cache/
+
+# ============ 用户上传的运行时产物 (占体积 + 含用户隐私, 不入库) ============
+# 只忽略 uploads 这一层: static/index.html 与 static/src/ 是**前端源码, 必须继续跟踪**。
+#   写成 static/ 会把前端源码静默取消跟踪。一次 git add -A 就会把用户照片提交进去,
+#   推上去就撤不回来了。
+static/uploads/
+
+# ============ 课件 / 规范化文档 (本地查看用, 不入版本库) ============
+# 对齐参考 "ResearchAgent/docs/投研课件" 自建的 carRAG 课件 HTML 全站。
+# 它是讲解载体、非源码, 本地浏览器打开 docs/课件/index.html 浏览即可; 不入库。
+/docs/
+
+# ============ 数据库文件 (SQLite 等本地数据文件) ============
+*.db
+*.sqlite3
+*.sqlite
+
+# ============ 操作系统 ============
+.DS_Store
+Thumbs.db
+
+# 例外: 允许提交 .env.example 模板, 但其它 .env.* 仍忽略
+!.env.example

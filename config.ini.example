@@ -1,0 +1,105 @@
+# 管理整个项目的配置
+
+# MySQL 配置
+[mysql]
+host = localhost
+port = 13306
+user = root
+password = 123456
+database = subjects_kg
+
+# Redis 配置
+[redis]
+host = localhost
+port = 16379
+password = 1234
+db = 0
+
+# 日志配置
+[logger]
+log_file =logs/app.log
+
+# Milvus 配置
+[milvus]
+host = localhost
+port = 19538
+
+
+# 检索仅一条道: 页级多模态(muvera+maxsim), 查询纯文字。见 [multimodal]。
+
+# 知识库书目注册表: 每行 `source_id = PDF 路径(相对项目根)`。
+#   source_id 是页身份之上的"来源维度", 会进主键/URL/引用, 是稳定的书号。
+#   加书 = 加一行再建库; 删书 = 删一行再跑 scripts/delete_book_kb.py; 改书内容 =
+#   保持同 source_id 换 pdf 路径再重建该书。source_id 一旦定下就不要换。
+#   没有本段时 Config 回退单书语义(书 = [multimodal] pdf_path, source_id = 文件名 stem)。
+[books]
+train_a = rag_qa/data/car_data/train_a.pdf
+
+# 多模态检索(L4)配置: ColQwen2 整页视觉检索 + qwen-vl 生成
+#   路径均相对项目根; model_path 留空则按 ModelScope/本地目录的兜底顺序自动找
+[multimodal]
+# 建库语料 PDF(天池领克手册, 354 页)
+#   注: 早期记录说"文字层乱码, get_text() 不可用"是**错的** —— 2026-09-10 全量实测
+#   354 页文字层完好(145074 字符, 私用区/控制字符均为 0), 之前的"乱码"是 GBK 控制台
+#   编码伪影。单通道检索: 查询只有文字, ColQwen2 编成页图同空间向量, 命中页图交给 VL 读。]
+#   2026-09-13: 从仓库外的 ../DATA/Tianchi/ 挪进项目内(car_data/, 与评估用的
+#   103 道测试题放在一起), 项目从此不再依赖 DATA/ 的布局。
+pdf_path = rag_qa/data/car_data/train_a.pdf
+# 页图渲染输出目录(建库中间产物, 不进版本库)
+page_image_dir = rag_qa/data/pages
+# ColQwen2 权重目录(本地化, 勿重下); 不存在时按 modelscope_id 拉取
+model_path = rag_qa/models/colqwen2_local
+modelscope_id = vidore/colqwen2-v1.0-hf
+# Milvus 页级 collection —— 全新库 + 全新集合, 不复用任何既有 collection:
+#   default.colqwen2_pages   冒烟产物(10 页), 保留不动
+#   default.probe_ml         冒烟产物, 保留不动
+#   itcast.edurag_final      旧文本链路(BGE-M3), 保留不动
+#   本链路专用: car_mm.colqwen2_page_vectors(354 页全量)
+# edurag_mm.colqwen2_page_vectors(354 页)已弃用, 但**保留不删** —— 删除不可逆,
+#   等 car_mm 稳定运行后再单独决定。
+# database 不存在时由 MultimodalPageStore 自动创建(见 ensure_database)
+collection_name = colqwen2_page_vectors
+database_name = car_mm
+# 每腿召回页数
+leg_topk = 5
+# 拒答阈值(按查长归一 ÷|Q| 重标, 量纲 0~1): 当前生产链路不按分数拒答(闸门②已删),
+#   仅无候选(闸门1)+ 模型自评(闸门3)会拒; 本键留作备用、未启用。
+refuse_score = 0.55
+# 候选页图送给 qwen-vl 前的最长边像素(控 token, 4 张页图约 2~3k token)
+page_image_max_side = 1400
+# 图像编码批大小(4GB 卡: 1 张页图峰值约 1.8GB, 不要调大)
+encode_batch_size = 1
+
+# ---- MUVERA 两阶段图片腿 ----
+# retrieval_mode: muvera = FDE 单向量粗筛 + MaxSim 精排; maxsim = 单阶段(改造前的行为)。
+#   maxsim 是**回退通路**, 端到端行为必须与改造前逐位一致 —— 评估台也靠它跑对照组。
+retrieval_mode = muvera
+# FDE 专用集合(新建, 不复用任何既有 collection —— 家规 R2b), 建在 car_mm 库下
+fde_collection_name = colqwen2_page_fde
+# FDE 参数: 维度 D = fde_reps × 2^fde_k_sim × fde_dim_proj = 20 × 64 × 16 = 20480
+#   改任何一个都必须**同时**重建 FDE 集合 —— 查询侧与建库侧的矩阵由 seed 决定,
+#   参数不一致 = 不在同一空间, 不报错但结果全错(与家规 R1 同一类坑)
+fde_k_sim = 6
+fde_dim_proj = 16
+fde_reps = 20
+fde_seed = 42
+# 阶段1 召回多少个页号给阶段2 精排。它同时是**整个系统的召回天花板**:
+#   真值页没进这个名单, 阶段2 再精确也救不回来。
+fde_topk = 50
+# 阶段1 的索引类型: FLAT = 穷举精确 MIPS(354 条 × 20480 维 = 29MB, 毫秒级)。
+#   用 FLAT 是为了让评估干净 —— 召回损失只归因于 FDE 近似本身, 不掺 ANN 的账。
+#   语料涨到数万页再切 HNSW。
+fde_index = FLAT
+
+# 缓存 TTL(秒): L2 人工标注可信 -> 长; L3 直答 / L4 生成 -> 短; 拒答不回填
+[cache_ttl]
+l2_mysql = 604800
+l3_direct = 86400
+l4_rag = 86400
+
+# 应用配置
+[app]
+customer_service_phone = 12345678
+# 静态资源根目录(相对项目根的路径, Config 会解析成绝对路径)。app.py 的 StaticFiles 挂载用它。
+#   (原"上传图目录"已随图片查询通道撤除)
+static_dir = static
